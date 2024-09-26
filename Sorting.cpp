@@ -1,10 +1,24 @@
 #include <iostream>
 #include <cstdlib>
+#include <vector>
 void swap(int& a, int& b)
 {
 	int tmp = a;
 	a = b;
 	b = tmp;
+}
+
+int max(int* arr, int n)
+{
+	int max = INT_MIN;
+	for (int i = 0; i < n; ++i)
+	{
+		if (max < arr[i])
+		{
+			max = arr[i];
+		}
+	}
+	return max;
 }
 
 void BubbleSort(int* arr, int n)
@@ -122,7 +136,7 @@ void heapify(int* arr, int n, int i)
 	int larg = i;
 	int l = 2 * i + 2;
 	int r = 2 * i + 1;
-	if(l < n && arr[l] > arr[i])
+	if (l < n && arr[l] > arr[i])
 	{
 		larg = l;
 	}
@@ -184,7 +198,7 @@ int Lpartition(int* arr, int l, int h)
 	int i = l, j = h - 1;
 	while (1)
 	{
-		while(arr[i] < pivot){
+		while (arr[i] < pivot) {
 			++i;
 		}
 		while (arr[j] > pivot)
@@ -285,51 +299,114 @@ void CountingSort(int* arr, int n)
 	int min = arr[0], max = arr[0];
 	for (int i = 0; i < n; ++i)
 	{
-		if (arr[i] > max)
-		{
+		if (arr[i] > max) {
 			max = arr[i];
 		}
-		if (arr[i] < min)
-		{
+		if (arr[i] < min) {
 			min = arr[i];
 		}
 	}
-	int* tmp = new int[max - min + 1];
-	max = max - min + 1;
-	for (int i = 0; i < max; ++i)
-	{
-		tmp[i] = 0;
-	}
-	for (int i = 0; i < n; ++i)
-	{
+
+	int rang = (max - min + 1);
+	int* tmp = new int[rang]();
+
+	for (int i = 0; i < n; ++i) {
 		++tmp[arr[i] - min];
-		//std::cout << arr[i] - min;
 	}
-	for (int i = 1; i < max; ++i)
-	{
+
+	for (int i = 1; i < rang; ++i) {
 		tmp[i] += tmp[i - 1];
 	}
+
 	int* out = new int[n];
-	for (int i = n - 1; i >= 0; --i)
-	{
+	for (int i = n - 1; i >= 0; --i) {
 		out[tmp[arr[i] - min] - 1] = arr[i];
 		--tmp[arr[i] - min];
 	}
-	delete[] arr;
-	arr = tmp;
-	tmp = nullptr;
+
+	for (int i = 0; i < n; ++i) {
+		arr[i] = out[i];
+	}
+
+	delete[] tmp;
+	delete[] out;
+}
+
+void count_for_radix(int* arr, int n, int exp)
+{
+	int* out = new int[n];
+	int count[10] = { 0 };
+	for (int i = 0; i < n; ++i)
+	{
+		++count[(arr[i] / exp) % 10];
+	}
+	for (int i = 1; i < 10; ++i)
+	{
+		count[i] += count[i - 1];
+	}
+	for (int i = n - 1; i >= 0; --i)
+	{
+		out[count[(arr[i] / exp) % 10] - 1] = arr[i];
+		--count[(arr[i] / exp) % 10];
+	}
+	for (int i = 0; i < n; ++i)
+	{
+		arr[i] = out[i];
+	}
+	delete[] out;
+}
+
+void RadixSort(int* arr, int n)
+{
+	int m = max(arr, n);
+	for (int exp = 1; m / exp > 0; exp *= 10)
+	{
+		count_for_radix(arr, n, exp);
+	}
+}
+
+void insertionSort(std::vector<float>& bucket) {
+	for (int i = 1; i < bucket.size(); ++i) {
+		float key = bucket[i];
+		int j = i - 1;
+		while (j >= 0 && bucket[j] > key) {
+			bucket[j + 1] = bucket[j];
+			j--;
+		}
+		bucket[j + 1] = key;
+	}
+}
+
+void BucketSort(float *arr, int n) {
+	std::vector<float> *b = new std::vector<float>[n];
+
+	for (int i = 0; i < n; i++) {
+		int bi = n * arr[i];
+		b[bi].push_back(arr[i]);
+	}
+
+	for (int i = 0; i < n; i++) {
+		insertionSort(b[i]);
+	}
+
+	int index = 0;
+	for (int i = 0; i < n; i++) {
+		for (int j = 0; j < b[i].size(); j++) {
+			arr[index++] = b[i][j];
+		}
+	}
 }
 
 int main()
 {
 	int n = 0;
 	std::cin >> n;
-	int* arr = new int[n];
+	float* arr = new float[n];
 	for (int i = 0; i < n; ++i)
 	{
 		std::cin >> arr[i];
 	}
-	CountingSort(arr, n);
+	BucketSort(arr, n);
 	for (int i = 0; i < n; ++i)
 	{
 		std::cout << arr[i] << " ";
